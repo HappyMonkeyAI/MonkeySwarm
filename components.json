@@ -1,24 +1,30 @@
 {
-  "version": 1,
-  "default_profile": "core",
+  "version": 2,
+  "default_profile": "swarm",
   "org": "HappyMonkeyAI",
   "default_root": "${HOME}/happymonkey",
+  "product_name": "AI Swarm Support Stack",
   "profiles": {
-    "core": {
-      "description": "Coordination plane for driver-model + CLI swarm development",
+    "swarm": {
+      "description": "Driver + CLI swarm support plane \u2014 task board, locks, CLI profiles, coordination MCPs, project registry, resource admission, lazy tool proxy, local user context, and Agents Protocol patterns.",
       "components": [
-        "dynamic-mcp-proxy",
-        "launcher-project-registry",
+        "ai-agent-teamwork-prompt",
+        "agents-protocol",
+        "agent-coordination-mcp",
         "agent-communication-mcp",
+        "launcher-project-registry",
         "resource-sentinel-mcp",
         "user-context-mcp",
-        "ai-agent-teamwork-prompt",
-        "agent-coordination-mcp"
+        "dynamic-mcp-proxy"
       ]
     },
+    "core": {
+      "description": "Alias of swarm (kept for older install commands)",
+      "extends": "swarm"
+    },
     "research": {
-      "description": "Core + article/social research servers",
-      "extends": "core",
+      "description": "Swarm + article/social research MCPs for the planning driver",
+      "extends": "swarm",
       "components": [
         "article-research-mcp",
         "social-research-mcp",
@@ -26,45 +32,113 @@
       ]
     },
     "data": {
-      "description": "Core + UK/US public-data MCPs",
-      "extends": "core",
+      "description": "Swarm + UK/US public-data MCPs",
+      "extends": "swarm",
       "components": [
         "openuk-public-data-mcp",
         "openus-public-data-mcp"
       ]
     },
     "full": {
-      "description": "Everything listed below",
+      "description": "Swarm + research + data + stable optional ops helpers",
       "extends": [
-        "core",
+        "swarm",
         "research",
         "data"
       ],
       "components": [
-        "keymaster-mcp",
         "ai-google-analytics-mcp",
-        "agents-protocol",
         "linux-maintenance"
+      ]
+    },
+    "incubating": {
+      "description": "In-development tools (Keymaster, etc.) \u2014 clone only, no promises",
+      "components": [
+        "keymaster-mcp"
       ]
     }
   },
   "components": {
-    "dynamic-mcp-proxy": {
-      "name": "DynamicMCPProxy",
-      "tier": "core",
-      "kind": "proxy",
-      "repo": "HappyMonkeyAI/DynamicMCPProxy",
-      "mirror_urls": [
-        "https://github.com/HappyMonkeyAI/DynamicMCPProxy.git",
-        "https://github.com/SPhillips1337/DynamicMCPProxy.git"
+    "ai-agent-teamwork-prompt": {
+      "name": "AI Agent Teamwork",
+      "tier": "swarm",
+      "kind": "prompts",
+      "repo": "HappyMonkeyAI/ai-agent-teamwork-prompt",
+      "dir": "ai-agent-teamwork-prompt",
+      "role": "Shared task board, file locks, project/agent bootstrap prompts, and CLI profile YAML (codex/agy/opencode/grok/hermes/kiro). This is the swarm's ground truth on disk \u2014 MCP layers read/adapt it; they do not replace it.",
+      "description": "Swarm templates + CLI agent profiles for multi-agent builds",
+      "tags": [
+        "prompts",
+        "swarm",
+        "profiles",
+        "cli-agents",
+        "task-board"
       ],
-      "dir": "DynamicMCPProxy",
-      "description": "Lazy MCP gateway \u2014 rotating tool belt under ~50-tool IDE budgets",
+      "install": {
+        "need": [
+          "git"
+        ],
+        "sync": "none",
+        "markers": [
+          "profiles",
+          "templates"
+        ]
+      },
+      "hermes": {
+        "register": false
+      },
+      "env_hints": [
+        "AGENT_CLI_PROFILES_DIR"
+      ],
+      "wires_to": [
+        "agent-coordination-mcp",
+        "agent-communication-mcp",
+        "agents-protocol"
+      ]
+    },
+    "agents-protocol": {
+      "name": "Agents Protocol",
+      "tier": "swarm",
+      "kind": "prompts",
+      "repo": "HappyMonkeyAI/AgentsProtocol",
+      "dir": "AgentsProtocol",
+      "role": "High-velocity agent operating rules (AGENTS.md, LTM, pre-mortem, ratchet). Complements teamwork bootstrap with protocol depth for Antigravity/IDE agents.",
+      "description": "High-velocity agent protocol (AGENTS.md, LTM, pre-mortem patterns)",
+      "tags": [
+        "prompts",
+        "protocol",
+        "antigravity",
+        "swarm"
+      ],
+      "install": {
+        "need": [
+          "git"
+        ],
+        "sync": "none",
+        "markers": [
+          "AGENTS.md"
+        ]
+      },
+      "hermes": {
+        "register": false
+      },
+      "wires_to": [
+        "ai-agent-teamwork-prompt"
+      ]
+    },
+    "agent-coordination-mcp": {
+      "name": "Agent Coordination MCP",
+      "tier": "swarm",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/agent-coordination-mcp",
+      "dir": "agent-coordination-mcp",
+      "role": "MCP control plane over the file-based teamwork board \u2014 list CLIs, inspect project coordination state, record assignments. Does not replace locks/tasks.py.",
+      "description": "File-based task board / lock coordination control plane for CLI agents",
       "tags": [
         "mcp",
-        "proxy",
-        "lazy-load",
-        "gateway"
+        "coordination",
+        "task-board",
+        "swarm"
       ],
       "install": {
         "need": [
@@ -73,59 +147,30 @@
         ],
         "sync": "uv sync",
         "markers": [
-          "pyproject.toml",
-          "catalogue.json"
-        ]
-      },
-      "hermes": {
-        "register": false
-      },
-      "catalogue_name": "dynamic_proxy"
-    },
-    "launcher-project-registry": {
-      "name": "Launcher Project Registry",
-      "tier": "core",
-      "kind": "mcp_python_pip",
-      "repo": "HappyMonkeyAI/launcher-project-registry",
-      "dir": "launcher-project-registry",
-      "description": "Project registry \u2014 paths, ports, tech stacks, CONTEXT.md for agents",
-      "tags": [
-        "mcp",
-        "registry",
-        "ports",
-        "projects"
-      ],
-      "install": {
-        "need": [
-          "git",
-          "python3"
-        ],
-        "sync": "venv_pip",
-        "requirements": "requirements.txt",
-        "markers": [
-          "requirements.txt",
-          "mcp-server"
+          "pyproject.toml"
         ]
       },
       "hermes": {
         "register": true,
-        "server_name": "launcher_registry",
-        "command_template": "${ROOT}/${DIR}/venv/bin/python",
-        "args_template": [
-          "${ROOT}/${DIR}/mcp-server/stdio_server.py"
+        "server_name": "agent_coordination",
+        "entrypoints": [
+          "agent-coordination-mcp"
         ]
       },
-      "catalogue_name": "launcher_registry",
-      "env_hints": [
-        "LAUNCHER_REGISTRY_PATH"
+      "catalogue_name": "agent_coordination",
+      "wires_to": [
+        "ai-agent-teamwork-prompt",
+        "agent-communication-mcp",
+        "dynamic-mcp-proxy"
       ]
     },
     "agent-communication-mcp": {
       "name": "Agent Communication MCP",
-      "tier": "core",
+      "tier": "swarm",
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/AgentCommunicationMCP",
       "dir": "agent-communication-mcp",
+      "role": "Cross-agent mailbox / A2A-shaped tasks, CLI provider readiness (from teamwork profiles), control-center view. Driver uses this to see who is ready and to hand work between server/dev/desktop agents.",
       "description": "Authenticated LAN coordination \u2014 A2A tasks, provider readiness, control center",
       "tags": [
         "mcp",
@@ -155,20 +200,71 @@
       "env_hints": [
         "LAUNCHER_REGISTRY_PATH",
         "AGENT_CLI_PROFILES_DIR"
+      ],
+      "wires_to": [
+        "launcher-project-registry",
+        "ai-agent-teamwork-prompt",
+        "resource-sentinel-mcp"
+      ]
+    },
+    "launcher-project-registry": {
+      "name": "Launcher Project Registry",
+      "tier": "swarm",
+      "kind": "mcp_python_pip",
+      "repo": "HappyMonkeyAI/launcher-project-registry",
+      "dir": "launcher-project-registry",
+      "role": "Shared project map (paths, ports, tech stack, CONTEXT.md). Swarm agents and Agent Communication resolve \"which repo / which port\" here instead of guessing.",
+      "description": "Project registry \u2014 paths, ports, tech stacks, CONTEXT.md for agents",
+      "tags": [
+        "mcp",
+        "registry",
+        "ports",
+        "projects",
+        "swarm"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "python3"
+        ],
+        "sync": "venv_pip",
+        "requirements": "requirements.txt",
+        "markers": [
+          "requirements.txt",
+          "mcp-server"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "launcher_registry",
+        "command_template": "${ROOT}/${DIR}/venv/bin/python",
+        "args_template": [
+          "${ROOT}/${DIR}/mcp-server/stdio_server.py"
+        ]
+      },
+      "catalogue_name": "launcher_registry",
+      "env_hints": [
+        "LAUNCHER_REGISTRY_PATH"
+      ],
+      "wires_to": [
+        "agent-communication-mcp",
+        "dynamic-mcp-proxy"
       ]
     },
     "resource-sentinel-mcp": {
       "name": "Resource Sentinel MCP",
-      "tier": "core",
+      "tier": "swarm",
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/Resource-Sentinel-MCP",
       "dir": "Resource-Sentinel-MCP",
+      "role": "Host telemetry + lease admission so the driver does not spawn N heavy CLI agents into an already saturated box. Swarm scale safety valve.",
       "description": "Host telemetry + lease-based admission for heavy agent workloads",
       "tags": [
         "mcp",
         "resources",
         "leases",
-        "telemetry"
+        "telemetry",
+        "swarm"
       ],
       "install": {
         "need": [
@@ -188,19 +284,25 @@
           "fastmcp run src/resource_sentinel/server.py:mcp"
         ]
       },
-      "catalogue_name": "resource_sentinel"
+      "catalogue_name": "resource_sentinel",
+      "wires_to": [
+        "agent-communication-mcp",
+        "dynamic-mcp-proxy"
+      ]
     },
     "user-context-mcp": {
       "name": "User Context MCP",
-      "tier": "core",
+      "tier": "swarm",
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/UserContextMCPServer",
       "dir": "user-context-mcp",
-      "description": "Local developer context (stack, repos, communication prefs) for subagent bootstrap",
+      "role": "Local stack/repos/communication prefs for subagent bootstrap so workers inherit the same operator context without pasting walls of prose.",
+      "description": "Local developer context for subagent bootstrap",
       "tags": [
         "mcp",
         "context",
-        "bootstrap"
+        "bootstrap",
+        "swarm"
       ],
       "install": {
         "need": [
@@ -225,49 +327,30 @@
       "catalogue_name": "user_context",
       "env_hints": [
         "USER_CONTEXT_ROOT"
-      ]
-    },
-    "ai-agent-teamwork-prompt": {
-      "name": "AI Agent Teamwork Prompt",
-      "tier": "core",
-      "kind": "prompts",
-      "repo": "HappyMonkeyAI/ai-agent-teamwork-prompt",
-      "dir": "ai-agent-teamwork-prompt",
-      "description": "Swarm templates + CLI agent profiles (codex/agy/opencode/grok/hermes)",
-      "tags": [
-        "prompts",
-        "swarm",
-        "profiles",
-        "cli-agents"
       ],
-      "install": {
-        "need": [
-          "git"
-        ],
-        "sync": "none",
-        "markers": [
-          "profiles",
-          "templates"
-        ]
-      },
-      "hermes": {
-        "register": false
-      },
-      "env_hints": [
-        "AGENT_CLI_PROFILES_DIR"
+      "wires_to": [
+        "agent-communication-mcp",
+        "ai-agent-teamwork-prompt"
       ]
     },
-    "agent-coordination-mcp": {
-      "name": "Agent Coordination MCP",
-      "tier": "core",
-      "kind": "mcp_python_uv",
-      "repo": "HappyMonkeyAI/agent-coordination-mcp",
-      "dir": "agent-coordination-mcp",
-      "description": "File-based task board / lock coordination control plane for CLI agents",
+    "dynamic-mcp-proxy": {
+      "name": "DynamicMCPProxy",
+      "tier": "swarm",
+      "kind": "proxy",
+      "repo": "HappyMonkeyAI/DynamicMCPProxy",
+      "mirror_urls": [
+        "https://github.com/HappyMonkeyAI/DynamicMCPProxy.git",
+        "https://github.com/SPhillips1337/DynamicMCPProxy.git"
+      ],
+      "dir": "DynamicMCPProxy",
+      "role": "Single IDE entry that lazily mounts the swarm MCPs (and others) under a tool-count budget. Keeps Hermes/Antigravity/Claude from drowning in tools.",
+      "description": "Lazy MCP gateway \u2014 rotating tool belt under ~50-tool IDE budgets",
       "tags": [
         "mcp",
-        "coordination",
-        "task-board"
+        "proxy",
+        "lazy-load",
+        "gateway",
+        "swarm"
       ],
       "install": {
         "need": [
@@ -276,17 +359,21 @@
         ],
         "sync": "uv sync",
         "markers": [
-          "pyproject.toml"
+          "pyproject.toml",
+          "catalogue.json"
         ]
       },
       "hermes": {
-        "register": true,
-        "server_name": "agent_coordination",
-        "entrypoints": [
-          "agent-coordination-mcp"
-        ]
+        "register": false
       },
-      "catalogue_name": "agent_coordination"
+      "catalogue_name": "dynamic_proxy",
+      "wires_to": [
+        "agent-coordination-mcp",
+        "agent-communication-mcp",
+        "launcher-project-registry",
+        "resource-sentinel-mcp",
+        "user-context-mcp"
+      ]
     },
     "article-research-mcp": {
       "name": "Article Research MCP",
@@ -294,6 +381,7 @@
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/article-research-mcp",
       "dir": "article-research-mcp",
+      "role": "Planning briefs (dev.to/HN/RSS) for the driver before fan-out.",
       "description": "Article/tutorial research for planning \u2014 dev.to, HN, RSS, ranked briefs",
       "tags": [
         "mcp",
@@ -332,6 +420,7 @@
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/social-research-mcp",
       "dir": "social-research-mcp",
+      "role": "Social trend signals for content/planning drivers.",
       "description": "Social trend research for content planning",
       "tags": [
         "mcp",
@@ -361,7 +450,8 @@
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/devto-mcp-server",
       "dir": "devto-mcp-server",
-      "description": "Thin dev.to API MCP (prefer article-research-mcp for planning briefs)",
+      "role": "Thin dev.to API; prefer article-research-mcp for ranked planning briefs.",
+      "description": "Thin dev.to API MCP",
       "tags": [
         "mcp",
         "devto",
@@ -392,7 +482,8 @@
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/OpenUKPublicDataMCP",
       "dir": "OpenUKPublicDataMCP",
-      "description": "No-key-first UK public data (postcodes, GOV.UK, ONS, floods, Parliament, \u2026)",
+      "role": "Domain data tools when a swarm build needs UK public data.",
+      "description": "No-key-first UK public data MCP",
       "tags": [
         "mcp",
         "uk",
@@ -423,7 +514,8 @@
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/OpenUSPublicDataMCP",
       "dir": "OpenUSPublicDataMCP",
-      "description": "US public-data MCP counterpart",
+      "role": "Domain data tools when a swarm build needs US public data.",
+      "description": "Federal-first US public data MCP",
       "tags": [
         "mcp",
         "us",
@@ -445,36 +537,13 @@
       },
       "catalogue_name": "openuspublicdata"
     },
-    "keymaster-mcp": {
-      "name": "Keymaster MCP",
-      "tier": "optional",
-      "kind": "other",
-      "repo": "HappyMonkeyAI/keymasterMCP",
-      "dir": "keymasterMCP",
-      "description": "Credential vault / proxy with project-scoped access (PHP stack)",
-      "tags": [
-        "mcp",
-        "secrets",
-        "vault"
-      ],
-      "install": {
-        "need": [
-          "git"
-        ],
-        "sync": "none",
-        "markers": []
-      },
-      "hermes": {
-        "register": false
-      },
-      "notes": "Requires separate PHP/web runtime; not auto-registered by this installer."
-    },
     "ai-google-analytics-mcp": {
       "name": "AI Google Analytics MCP",
       "tier": "optional",
       "kind": "mcp_python_uv",
       "repo": "HappyMonkeyAI/ai-google-analytics-mcp",
       "dir": "ai-google-analytics-mcp",
+      "role": "Optional GA4 provisioning for shipped web apps \u2014 not swarm coordination.",
       "description": "Provision GA4 properties/streams for local AI/web projects",
       "tags": [
         "mcp",
@@ -496,37 +565,13 @@
       },
       "catalogue_name": "ai_google_analytics"
     },
-    "agents-protocol": {
-      "name": "Agents Protocol",
-      "tier": "optional",
-      "kind": "prompts",
-      "repo": "HappyMonkeyAI/AgentsProtocol",
-      "dir": "AgentsProtocol",
-      "description": "High-velocity agent protocol (AGENTS.md, LTM, pre-mortem patterns)",
-      "tags": [
-        "prompts",
-        "protocol",
-        "antigravity"
-      ],
-      "install": {
-        "need": [
-          "git"
-        ],
-        "sync": "none",
-        "markers": [
-          "AGENTS.md"
-        ]
-      },
-      "hermes": {
-        "register": false
-      }
-    },
     "linux-maintenance": {
       "name": "Linux Maintenance",
       "tier": "optional",
       "kind": "other",
       "repo": "HappyMonkeyAI/LinuxMaintenance.sh",
       "dir": "LinuxMaintenance.sh",
+      "role": "Host hygiene helper; not part of swarm messaging.",
       "description": "Simple Linux maintenance script companion",
       "tags": [
         "ops",
@@ -541,6 +586,32 @@
       "hermes": {
         "register": false
       }
+    },
+    "keymaster-mcp": {
+      "name": "Keymaster MCP",
+      "tier": "incubating",
+      "kind": "other",
+      "repo": "HappyMonkeyAI/keymasterMCP",
+      "dir": "keymasterMCP",
+      "role": "Future secrets plane (vault + proxy so agents avoid raw .env). Promising for swarm security, still in development \u2014 install profile=incubating only.",
+      "description": "Credential vault / proxy (MCP-first; still maturing)",
+      "tags": [
+        "mcp",
+        "secrets",
+        "vault",
+        "incubating"
+      ],
+      "install": {
+        "need": [
+          "git"
+        ],
+        "sync": "none",
+        "markers": []
+      },
+      "hermes": {
+        "register": false
+      },
+      "notes": "Not part of default swarm. PHP/runtime setup separate; do not auto-register."
     }
   }
 }

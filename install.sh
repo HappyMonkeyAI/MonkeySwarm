@@ -25,7 +25,7 @@ Usage:
 
 Options:
   --dir PATH           Root install directory (default: ~/happymonkey)
-  --profile NAME       core | research | data | full (default: core)
+  --profile NAME       swarm | core | research | data | full | incubating (default: swarm)
   --only LIST          Comma-separated component ids (overrides profile)
   --no-sync            Clone/update only; skip dependency installs
   --skip-existing      Do not git pull existing checkouts
@@ -38,10 +38,10 @@ Options:
 
 Examples:
   curl -fsSL https://raw.githubusercontent.com/HappyMonkeyAI/happymonkey-dev-ecosystem/main/install.sh -o install.sh
-  chmod +x install.sh && ./install.sh --profile core
+  chmod +x install.sh && ./install.sh --profile swarm
 
   ./install.sh --dir "\$HOME/happymonkey" --profile research --hermes
-  ./install.sh --only dynamic-mcp-proxy,resource-sentinel-mcp
+  ./install.sh --only agent-coordination-mcp,resource-sentinel-mcp
 
 After install, see:
   \$ROOT/GENERATED/README.md
@@ -58,7 +58,7 @@ expand_home() {
 }
 
 ROOT="$(expand_home "${HM_ROOT:-${HOME}/happymonkey}")"
-PROFILE="core"
+PROFILE="swarm"
 ONLY=""
 SYNC_DEPS=1
 SKIP_EXISTING=0
