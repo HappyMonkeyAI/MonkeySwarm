@@ -1,0 +1,546 @@
+{
+  "version": 1,
+  "default_profile": "core",
+  "org": "HappyMonkeyAI",
+  "default_root": "${HOME}/happymonkey",
+  "profiles": {
+    "core": {
+      "description": "Coordination plane for driver-model + CLI swarm development",
+      "components": [
+        "dynamic-mcp-proxy",
+        "launcher-project-registry",
+        "agent-communication-mcp",
+        "resource-sentinel-mcp",
+        "user-context-mcp",
+        "ai-agent-teamwork-prompt",
+        "agent-coordination-mcp"
+      ]
+    },
+    "research": {
+      "description": "Core + article/social research servers",
+      "extends": "core",
+      "components": [
+        "article-research-mcp",
+        "social-research-mcp",
+        "devto-mcp-server"
+      ]
+    },
+    "data": {
+      "description": "Core + UK/US public-data MCPs",
+      "extends": "core",
+      "components": [
+        "openuk-public-data-mcp",
+        "openus-public-data-mcp"
+      ]
+    },
+    "full": {
+      "description": "Everything listed below",
+      "extends": [
+        "core",
+        "research",
+        "data"
+      ],
+      "components": [
+        "keymaster-mcp",
+        "ai-google-analytics-mcp",
+        "agents-protocol",
+        "linux-maintenance"
+      ]
+    }
+  },
+  "components": {
+    "dynamic-mcp-proxy": {
+      "name": "DynamicMCPProxy",
+      "tier": "core",
+      "kind": "proxy",
+      "repo": "HappyMonkeyAI/DynamicMCPProxy",
+      "mirror_urls": [
+        "https://github.com/HappyMonkeyAI/DynamicMCPProxy.git",
+        "https://github.com/SPhillips1337/DynamicMCPProxy.git"
+      ],
+      "dir": "DynamicMCPProxy",
+      "description": "Lazy MCP gateway \u2014 rotating tool belt under ~50-tool IDE budgets",
+      "tags": [
+        "mcp",
+        "proxy",
+        "lazy-load",
+        "gateway"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml",
+          "catalogue.json"
+        ]
+      },
+      "hermes": {
+        "register": false
+      },
+      "catalogue_name": "dynamic_proxy"
+    },
+    "launcher-project-registry": {
+      "name": "Launcher Project Registry",
+      "tier": "core",
+      "kind": "mcp_python_pip",
+      "repo": "HappyMonkeyAI/launcher-project-registry",
+      "dir": "launcher-project-registry",
+      "description": "Project registry \u2014 paths, ports, tech stacks, CONTEXT.md for agents",
+      "tags": [
+        "mcp",
+        "registry",
+        "ports",
+        "projects"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "python3"
+        ],
+        "sync": "venv_pip",
+        "requirements": "requirements.txt",
+        "markers": [
+          "requirements.txt",
+          "mcp-server"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "launcher_registry",
+        "command_template": "${ROOT}/${DIR}/venv/bin/python",
+        "args_template": [
+          "${ROOT}/${DIR}/mcp-server/stdio_server.py"
+        ]
+      },
+      "catalogue_name": "launcher_registry",
+      "env_hints": [
+        "LAUNCHER_REGISTRY_PATH"
+      ]
+    },
+    "agent-communication-mcp": {
+      "name": "Agent Communication MCP",
+      "tier": "core",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/AgentCommunicationMCP",
+      "dir": "agent-communication-mcp",
+      "description": "Authenticated LAN coordination \u2014 A2A tasks, provider readiness, control center",
+      "tags": [
+        "mcp",
+        "a2a",
+        "coordination",
+        "swarm"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "agent_communication",
+        "entrypoints": [
+          "scripts/run_stdio.py",
+          "python -m agent_communication"
+        ]
+      },
+      "catalogue_name": "agent_communication",
+      "env_hints": [
+        "LAUNCHER_REGISTRY_PATH",
+        "AGENT_CLI_PROFILES_DIR"
+      ]
+    },
+    "resource-sentinel-mcp": {
+      "name": "Resource Sentinel MCP",
+      "tier": "core",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/Resource-Sentinel-MCP",
+      "dir": "Resource-Sentinel-MCP",
+      "description": "Host telemetry + lease-based admission for heavy agent workloads",
+      "tags": [
+        "mcp",
+        "resources",
+        "leases",
+        "telemetry"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml",
+          "src/resource_sentinel"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "resource_sentinel",
+        "entrypoints": [
+          "fastmcp run src/resource_sentinel/server.py:mcp"
+        ]
+      },
+      "catalogue_name": "resource_sentinel"
+    },
+    "user-context-mcp": {
+      "name": "User Context MCP",
+      "tier": "core",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/UserContextMCPServer",
+      "dir": "user-context-mcp",
+      "description": "Local developer context (stack, repos, communication prefs) for subagent bootstrap",
+      "tags": [
+        "mcp",
+        "context",
+        "bootstrap"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv_or_venv",
+        "markers": [
+          "server.py"
+        ],
+        "post": [
+          "copy_context_examples"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "user_context",
+        "entrypoints": [
+          "server.py"
+        ]
+      },
+      "catalogue_name": "user_context",
+      "env_hints": [
+        "USER_CONTEXT_ROOT"
+      ]
+    },
+    "ai-agent-teamwork-prompt": {
+      "name": "AI Agent Teamwork Prompt",
+      "tier": "core",
+      "kind": "prompts",
+      "repo": "HappyMonkeyAI/ai-agent-teamwork-prompt",
+      "dir": "ai-agent-teamwork-prompt",
+      "description": "Swarm templates + CLI agent profiles (codex/agy/opencode/grok/hermes)",
+      "tags": [
+        "prompts",
+        "swarm",
+        "profiles",
+        "cli-agents"
+      ],
+      "install": {
+        "need": [
+          "git"
+        ],
+        "sync": "none",
+        "markers": [
+          "profiles",
+          "templates"
+        ]
+      },
+      "hermes": {
+        "register": false
+      },
+      "env_hints": [
+        "AGENT_CLI_PROFILES_DIR"
+      ]
+    },
+    "agent-coordination-mcp": {
+      "name": "Agent Coordination MCP",
+      "tier": "core",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/agent-coordination-mcp",
+      "dir": "agent-coordination-mcp",
+      "description": "File-based task board / lock coordination control plane for CLI agents",
+      "tags": [
+        "mcp",
+        "coordination",
+        "task-board"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "agent_coordination",
+        "entrypoints": [
+          "agent-coordination-mcp"
+        ]
+      },
+      "catalogue_name": "agent_coordination"
+    },
+    "article-research-mcp": {
+      "name": "Article Research MCP",
+      "tier": "research",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/article-research-mcp",
+      "dir": "article-research-mcp",
+      "description": "Article/tutorial research for planning \u2014 dev.to, HN, RSS, ranked briefs",
+      "tags": [
+        "mcp",
+        "research",
+        "articles",
+        "planning"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "article_research",
+        "entrypoints": [
+          "article-research-mcp"
+        ]
+      },
+      "catalogue_name": "article_research",
+      "env_hints": [
+        "OPENAI_COMPAT_BASE_URL",
+        "OPENAI_COMPAT_API_KEY",
+        "OPENAI_COMPAT_MODEL",
+        "ARTICLE_RESEARCH_ROOT"
+      ]
+    },
+    "social-research-mcp": {
+      "name": "Social Research MCP",
+      "tier": "research",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/social-research-mcp",
+      "dir": "social-research-mcp",
+      "description": "Social trend research for content planning",
+      "tags": [
+        "mcp",
+        "research",
+        "social",
+        "content"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "social_research"
+      },
+      "catalogue_name": "social_research"
+    },
+    "devto-mcp-server": {
+      "name": "dev.to MCP Server",
+      "tier": "research",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/devto-mcp-server",
+      "dir": "devto-mcp-server",
+      "description": "Thin dev.to API MCP (prefer article-research-mcp for planning briefs)",
+      "tags": [
+        "mcp",
+        "devto",
+        "research"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "devto",
+        "entrypoints": [
+          "devto-mcp-server"
+        ]
+      },
+      "catalogue_name": "devto"
+    },
+    "openuk-public-data-mcp": {
+      "name": "Open UK Public Data MCP",
+      "tier": "data",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/OpenUKPublicDataMCP",
+      "dir": "OpenUKPublicDataMCP",
+      "description": "No-key-first UK public data (postcodes, GOV.UK, ONS, floods, Parliament, \u2026)",
+      "tags": [
+        "mcp",
+        "uk",
+        "open-data"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "openukpublicdata",
+        "entrypoints": [
+          "openukpublicdata-mcp"
+        ]
+      },
+      "catalogue_name": "openukpublicdata"
+    },
+    "openus-public-data-mcp": {
+      "name": "Open US Public Data MCP",
+      "tier": "data",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/OpenUSPublicDataMCP",
+      "dir": "OpenUSPublicDataMCP",
+      "description": "US public-data MCP counterpart",
+      "tags": [
+        "mcp",
+        "us",
+        "open-data"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      "hermes": {
+        "register": true,
+        "server_name": "openuspublicdata"
+      },
+      "catalogue_name": "openuspublicdata"
+    },
+    "keymaster-mcp": {
+      "name": "Keymaster MCP",
+      "tier": "optional",
+      "kind": "other",
+      "repo": "HappyMonkeyAI/keymasterMCP",
+      "dir": "keymasterMCP",
+      "description": "Credential vault / proxy with project-scoped access (PHP stack)",
+      "tags": [
+        "mcp",
+        "secrets",
+        "vault"
+      ],
+      "install": {
+        "need": [
+          "git"
+        ],
+        "sync": "none",
+        "markers": []
+      },
+      "hermes": {
+        "register": false
+      },
+      "notes": "Requires separate PHP/web runtime; not auto-registered by this installer."
+    },
+    "ai-google-analytics-mcp": {
+      "name": "AI Google Analytics MCP",
+      "tier": "optional",
+      "kind": "mcp_python_uv",
+      "repo": "HappyMonkeyAI/ai-google-analytics-mcp",
+      "dir": "ai-google-analytics-mcp",
+      "description": "Provision GA4 properties/streams for local AI/web projects",
+      "tags": [
+        "mcp",
+        "analytics",
+        "ga4"
+      ],
+      "install": {
+        "need": [
+          "git",
+          "uv"
+        ],
+        "sync": "uv sync",
+        "markers": [
+          "pyproject.toml"
+        ]
+      },
+      "hermes": {
+        "register": false
+      },
+      "catalogue_name": "ai_google_analytics"
+    },
+    "agents-protocol": {
+      "name": "Agents Protocol",
+      "tier": "optional",
+      "kind": "prompts",
+      "repo": "HappyMonkeyAI/AgentsProtocol",
+      "dir": "AgentsProtocol",
+      "description": "High-velocity agent protocol (AGENTS.md, LTM, pre-mortem patterns)",
+      "tags": [
+        "prompts",
+        "protocol",
+        "antigravity"
+      ],
+      "install": {
+        "need": [
+          "git"
+        ],
+        "sync": "none",
+        "markers": [
+          "AGENTS.md"
+        ]
+      },
+      "hermes": {
+        "register": false
+      }
+    },
+    "linux-maintenance": {
+      "name": "Linux Maintenance",
+      "tier": "optional",
+      "kind": "other",
+      "repo": "HappyMonkeyAI/LinuxMaintenance.sh",
+      "dir": "LinuxMaintenance.sh",
+      "description": "Simple Linux maintenance script companion",
+      "tags": [
+        "ops",
+        "shell"
+      ],
+      "install": {
+        "need": [
+          "git"
+        ],
+        "sync": "none"
+      },
+      "hermes": {
+        "register": false
+      }
+    }
+  }
+}

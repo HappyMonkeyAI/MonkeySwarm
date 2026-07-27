@@ -1,0 +1,17 @@
+# Local / generated
+.DS_Store
+*.pyc
+__pycache__/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Editor
+.idea/
+.vscode/
+*.swp
+
+# Install test outputs
+/tmp-hm-*/
