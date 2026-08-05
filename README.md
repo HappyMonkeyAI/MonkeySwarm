@@ -1,4 +1,4 @@
-# HappyMonkey AI Swarm Support Stack
+# MonkeySwarm
 
 One-command install for the HappyMonkeyAI **swarm support plane**: the MCP servers + prompt packs that let a top model **plan** and **fan work out** to CLI coding agents on a shared task board.
 
