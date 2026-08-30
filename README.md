@@ -36,8 +36,8 @@ Vibes and other unfinished runtimes are **out of tree** until they are stable sw
 Prereqs: `git`, `python3`, [`uv`](https://github.com/astral-sh/uv).
 
 ```bash
-git clone https://github.com/HappyMonkeyAI/happymonkey-dev-ecosystem.git
-cd happymonkey-dev-ecosystem
+git clone https://github.com/HappyMonkeyAI/MonkeySwarm.git
+cd MonkeySwarm
 chmod +x install.sh
 ./install.sh --profile swarm --dir "$HOME/happymonkey"
 ```
