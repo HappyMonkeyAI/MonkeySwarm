@@ -15,3 +15,6 @@ venv/
 
 # Install test outputs
 /tmp-hm-*/
+
+# local protocol overlay (ADR-0003)
+MCP.local.md
