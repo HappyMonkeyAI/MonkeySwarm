@@ -25,10 +25,12 @@ Unique local roots that appear in the live DevHost launcher registry. Prefer the
 | `Documents\development\EchoesOfAion` | `echoes-of-aion-e2e-task12` | `/home/stephen/projects/EchoesOfAion` | yes | Also has map-QA slugs; same tree |
 | `Documents\development\MRPGRealms` | `mrpg-realms` | `/home/stephen/projects/MRPGRealms` | yes | Three.js / multiplayer |
 | `Documents\development\AshfallRTS` | `ashfall-rts` | `/home/stephen/projects/AshfallRTS` | med (docs/scan) | UE research clone; LFS skipped on DevHost — no Linux Editor. Hermes: docs/AuditScan/crosswalk only |
+| `Documents\development\Random-Realm` | `random-realm` | `/home/stephen/projects/Random-Realm` | heavy (docs/scan) | Unity NGO collab; LFS skipped on DevHost — no Linux Editor. Hermes/SSH: AuditScan, docs, source analysis only |
 | `Documents\development\restaurantMarketingAgent` | `restaurant-marketing-agent-naz-preview` | `/home/stephen/projects/restaurantMarketingAgent` | low–med | Preview slugs; pick matching preview |
 | `happymonkey\article-research-mcp` | `article-research-mcp` | `/home/stephen/projects/article-research-mcp` | low | MCP tests/uv |
 | `Documents\development\kev-decision-mcp` | `kev-decision-mcp` | `/home/stephen/projects/jev_mcp` | low | Slug name ≠ remote folder (`jev_mcp`) |
 | `Documents\development\social_trading` | `social-trading` | `/home/stephen/projects/social_trading` | med | Registered 2026-11-09; Jules + Vite feed PoC |
+| `Documents\development\construct` | `construct` | `/home/stephen/projects/construct` | med | Registered 2026-11-11; WebXR kitbash; sync via `scripts/devhost-sync.ps1` |
 
 ## Tier B — DevHost registry only (no Windows twin)
 
